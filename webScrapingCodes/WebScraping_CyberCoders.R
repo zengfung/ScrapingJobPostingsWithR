@@ -2,41 +2,6 @@ library(XML)
 library(xml2)
 library(RCurl)
 
-###
-#To be deleted after testing
-###
-# go to page of cybercoders.com for search results
-url = "https://www.cybercoders.com/search/"
-search = "data scientist"
-doc = htmlParse(getForm(url, searchterms = search))
-
-# get all search results
-results = getNodeSet(doc, "//div[@class='job-listing-item']")
-
-# test for first result
-firstResult = results[[1]]
-jobTitle = xmlValue(getNodeSet(firstResult, ".//div[@class='job-title']//a"))
-jobURL = paste0("https://www.cybercoders.com", 
-                 xpathSApply(firstResult, ".//div[@class='job-title']//a", xmlGetAttr, "href"))
-jobLink = htmlParse(getURL(jobURL))
-location = xmlValue(getNodeSet(firstResult, ".//div[@class='details']//div[@class='location']"))
-jobTypeAndSalary = xmlValue(getNodeSet(firstResult, ".//div[@class='details']//div[@class='wage']"))
-jobDescription = xmlValue(getNodeSet(firstResult, ".//div[@class='description']"))
-skills = xmlValue(getNodeSet(firstResult, ".//div[@class='skills']//ul[@class='skill-list']//li[@class='skill-item']//a//span[@class='skill-name']"))
-jobIntro = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data']"))
-jobDetailsNode = getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data section-data-title']")
-jobDetails = lapply(jobDetailsNode, function(node) {
-  sapply(node[names(node)=="text"], xmlValue, trim = TRUE)
-})
-jobDetails = sapply(jobDetails, function(details){
-  paste(details, collapse="\n")
-})
-names(jobDetails) = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//h4[@class='section-title']"))
-###
-#END
-###
-
-
 # function to get data
 getJobInfo = function(result){
   jobTitle = xmlValue(getNodeSet(result, ".//div[@class='job-title']//a"))
@@ -46,10 +11,10 @@ getJobInfo = function(result){
   jobLocation = xmlValue(getNodeSet(result, ".//div[@class='details']//div[@class='location']"))
   jobTypeAndSalary = xmlValue(getNodeSet(result, ".//div[@class='details']//div[@class='wage']"))
   jobType = ifelse(jobTypeAndSalary != "Compensation Unspecified", 
-                   regmatches(jobTypeAndSalary, gregexpr("^[[:alpha:]-]+", jobTypeAndSalary)),
+                   regmatches(jobTypeAndSalary, gregexpr("^[[:alpha:]-]+", jobTypeAndSalary)[[1]]),
                    NA)
   jobSalary = ifelse(jobTypeAndSalary != "Compensation Unspecified",
-                     regmatches(jobTypeAndSalary, gregexpr("[$].+$", jobTypeAndSalary)),
+                     regmatches(jobTypeAndSalary, gregexpr("[$].+$", jobTypeAndSalary)[[1]]),
                      NA)
   jobDescription = xmlValue(getNodeSet(result, ".//div[@class='description']"))
   jobSkills = xmlValue(getNodeSet(result, ".//div[@class='skills']//ul[@class='skill-list']//li[@class='skill-item']//a//span[@class='skill-name']"))
@@ -61,18 +26,27 @@ getJobInfo = function(result){
   jobDetails = sapply(jobDetails, function(details){
     paste(details, collapse="\n")
   })
-  names(jobDetails) = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//h4[@class='section-title']"))
-  
+  if (length(jobDetails) > 0){
+    names(jobDetails) = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//h4[@class='section-title']"))
+  }
+  jobRequirements = ifelse(is.null(jobDetails["What You Need for this Position"][[1]]),
+                           NA, jobDetails["What You Need for this Position"][[1]])
+  jobResponsibilities = ifelse(is.null(jobDetails["What You Will Be Doing"][[1]]),
+                               NA, jobDetails["What You Will Be Doing"][[1]])
+  jobBenefits = ifelse(is.null(jobDetails["What's In It for You"][[1]]),
+                       NA, jobDetails["What's In It for You"][[1]])
   return (list(title = jobTitle,
-               link = jobURL,
+               source = "CyberCoders",
                location = jobLocation,
                employmentType = jobType,
                salary = jobSalary,
-               description = jobDescription,
-               preferredSkills = jobSkills,
-               intro = jobIntro,
-               details = jobDetails,
-               source = "CyberCoders"))
+               responsibilities = jobResponsibilities,
+               requiredSkills = jobRequirements,
+               preferredSkills = paste(jobSkills, collapse = "\n"),
+               benefits = jobBenefits,
+               #intro = jobIntro,
+               link = jobURL,
+               description = jobDescription))
 }
 
 # function to get data for different searches
@@ -95,3 +69,4 @@ searches = c("data scientist", "data analyst", "statistician")
 jobListings = sapply(searches, getJobPostings)
 print(sapply(jobListings, length))
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
+df = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
