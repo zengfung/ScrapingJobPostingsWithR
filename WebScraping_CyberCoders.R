@@ -61,4 +61,4 @@ fullJobListing = lapply(results, getJobInfo)
 checkRows = sapply(fullJobListing, function(x) x$title)
 fullJobListing = fullJobListing[!is.na(checkRows)]
 
-sapply(fullJobListing, function(x) x$employmentType)
+sapply(fullJobListing, function(x) x$details["Top Reasons to Work with Us"])
