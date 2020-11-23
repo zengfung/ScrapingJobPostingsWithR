@@ -24,7 +24,13 @@ jobTypeAndSalary = xmlValue(getNodeSet(firstResult, ".//div[@class='details']//d
 jobDescription = xmlValue(getNodeSet(firstResult, ".//div[@class='description']"))
 skills = xmlValue(getNodeSet(firstResult, ".//div[@class='skills']//ul[@class='skill-list']//li[@class='skill-item']//a//span[@class='skill-name']"))
 jobIntro = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data']"))
-jobDetails = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data section-data-title']"))
+jobDetailsNode = getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data section-data-title']")
+jobDetails = lapply(jobDetailsNode, function(node) {
+  sapply(node[names(node)=="text"], xmlValue, trim = TRUE)
+})
+jobDetails = sapply(jobDetails, function(details){
+  paste(details, collapse="\n")
+})
 names(jobDetails) = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//h4[@class='section-title']"))
 ###
 #END
@@ -48,7 +54,13 @@ getJobInfo = function(result){
   jobDescription = xmlValue(getNodeSet(result, ".//div[@class='description']"))
   jobSkills = xmlValue(getNodeSet(result, ".//div[@class='skills']//ul[@class='skill-list']//li[@class='skill-item']//a//span[@class='skill-name']"))
   jobIntro = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data']"))
-  jobDetails = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data section-data-title']"))
+  jobDetailsNode = getNodeSet(jobLink, "//div[@class='job-details span9']//div[@class='section-data section-data-title']")
+  jobDetails = lapply(jobDetailsNode, function(node) {
+    sapply(node[names(node)=="text"], xmlValue, trim = TRUE)
+  })
+  jobDetails = sapply(jobDetails, function(details){
+    paste(details, collapse="\n")
+  })
   names(jobDetails) = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//h4[@class='section-title']"))
   
   return (list(title = jobTitle,
