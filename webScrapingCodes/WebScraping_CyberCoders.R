@@ -36,7 +36,8 @@ getJobInfo = function(result){
   jobBenefits = ifelse(is.null(jobDetails["What's In It for You"][[1]]),
                        NA, jobDetails["What's In It for You"][[1]])
   return (list(title = jobTitle,
-               source = "CyberCoders",
+               source = "cybercoders.com",
+               company = "CyberCoders",
                location = jobLocation,
                employmentType = jobType,
                salary = jobSalary,
@@ -70,3 +71,4 @@ jobListings = sapply(searches, getJobPostings)
 print(sapply(jobListings, length))
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
 df = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
+names(df) = names(fullJobListing[[1]])
