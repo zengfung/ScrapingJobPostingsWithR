@@ -12,6 +12,7 @@ getJobInfo = function(result){
   Sys.sleep(1)
   jobURL = xpathSApply(result, ".//div[@class='flex-row']//div[@class='summary']//header[@class='card-header']//h2//a", xmlGetAttr, "href")
   jobLink = suppressMessages(htmlParse(GET(jobURL)))
+  # TODO: extracting job description does not work
   jobDescription = xpathSApply(jobLink, "//div[@class='card-content']", xmlValue)
   
   return(list(title = jobTitle,
@@ -41,10 +42,10 @@ searches = c("data scientist", "data analyst", "statistician")
 
 # obtain all search results
 jobListings = sapply(searches, getJobPostings)
-print(sapply(jobListings, length))
+print(sapply(jobListings, length)) # DS: 252, DA: 258, S: 22
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
 monster = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
-names(monster) = names(fullJobListing[[1]])
+names(monster) = names(fullJobListing[[1]])[-5]
 
 # save data frame as RData
 save(monster, file = "monster.RData")

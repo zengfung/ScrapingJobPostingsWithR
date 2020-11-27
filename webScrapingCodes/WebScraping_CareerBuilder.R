@@ -56,7 +56,7 @@ searches = c("data scientist", "data analyst", "statistician")
 
 # obtain all search results
 jobListings = lapply(searches, getJobPostings)
-print(sapply(jobListings, length))
+print(sapply(jobListings, length)) # DS: 623, DA: 1332, S: 35
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
 careerBuilder = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
 names(careerBuilder) = names(fullJobListing[[1]])
