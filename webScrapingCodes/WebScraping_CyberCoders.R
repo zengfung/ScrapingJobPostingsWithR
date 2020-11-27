@@ -53,7 +53,7 @@ getJobInfo = function(result){
 # function to get data for different searches
 getJobPostings = function(search){
   url = "https://www.cybercoders.com/search/"
-  doc = htmlParse(getForm(url, searchterms = search))
+  doc = htmlParse(getForm(url, searchterms = search, searchlocation = "california"))
 
   # get all search results
   results = getNodeSet(doc, "//div[@class='job-listing-item']")
@@ -70,5 +70,8 @@ searches = c("data scientist", "data analyst", "statistician")
 jobListings = sapply(searches, getJobPostings)
 print(sapply(jobListings, length))
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
-df = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
-names(df) = names(fullJobListing[[1]])
+cyberCoders = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
+names(cyberCoders) = names(fullJobListing[[1]])
+
+# save data frame as RData
+save(cyberCoders, "cyberCoders.RData")
