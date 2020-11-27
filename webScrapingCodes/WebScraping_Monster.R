@@ -47,4 +47,4 @@ monster = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing),
 names(monster) = names(fullJobListing[[1]])
 
 # save data frame as RData
-save(monster, "monster.RData")
+save(monster, file = "monster.RData")

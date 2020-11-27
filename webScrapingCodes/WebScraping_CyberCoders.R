@@ -68,10 +68,10 @@ searches = c("data scientist", "data analyst", "statistician")
 
 # obtain all search results
 jobListings = sapply(searches, getJobPostings)
-print(sapply(jobListings, length))
+print(sapply(jobListings, length)) # DS: 4, DA: 3, S: 0
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
 cyberCoders = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
 names(cyberCoders) = names(fullJobListing[[1]])
 
 # save data frame as RData
-save(cyberCoders, "cyberCoders.RData")
+save(cyberCoders, file = "cyberCoders.RData")

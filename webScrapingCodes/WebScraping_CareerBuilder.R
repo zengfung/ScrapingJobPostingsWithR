@@ -62,4 +62,4 @@ careerBuilder = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobLis
 names(careerBuilder) = names(fullJobListing[[1]])
 
 # save data frame as RData file
-save(careerBuilder, "careerBuilder.RData")
+save(careerBuilder, file = "careerBuilder.RData")
