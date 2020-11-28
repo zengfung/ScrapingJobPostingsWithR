@@ -24,7 +24,7 @@ getJobInfo = function(result){
     sapply(node[names(node)=="text"], xmlValue, trim = TRUE)
   })
   jobDetails = sapply(jobDetails, function(details){
-    paste(details, collapse="\n")
+    paste(details, collapse="@@")
   })
   if (length(jobDetails) > 0){
     names(jobDetails) = xmlValue(getNodeSet(jobLink, "//div[@class='job-details span9']//h4[@class='section-title']"))
@@ -43,7 +43,7 @@ getJobInfo = function(result){
                salary = jobSalary,
                responsibilities = jobResponsibilities,
                requiredSkills = jobRequirements,
-               preferredSkills = paste(jobSkills, collapse = "\n"),
+               preferredSkills = paste(jobSkills, collapse = "@@"),
                benefits = jobBenefits,
                #intro = jobIntro,
                link = jobURL,

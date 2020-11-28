@@ -24,9 +24,16 @@ getJobInfo = function(result){
   jobLocation = xmlValue(getNodeSet(result, "./div[@class='sjcl']/div[@class='location accessible-contrast-color-location']"))
   
   # Sys.sleep before parsing new page to avoid reCAPTCHA
-  Sys.sleep(1)
+  Sys.sleep(runif(1, min = 4, max = 10))
   jobURL = paste0("https://www.indeed.com", xpathSApply(result, "./h2/a", xmlGetAttr, "href"))
-  jobLink = htmlParse(GET(jobURL, config(cookie = siteCookie)))
+  # TODO: try this line
+  jobLink = tryCatch(htmlParse(GET(jobURL, config(cookie = siteCookie))),
+                     error = return(list(title = jobTitle,
+                                         source = "indeed.com",
+                                         company = jobCompany,
+                                         location = jobLocation,
+                                         description = NA,
+                                         link = jobURL)))
   jobDescription = xmlValue(getNodeSet(jobLink, "//div[@id='jobDescriptionText']//text()"))
   
   return(list(title = jobTitle,
@@ -37,23 +44,18 @@ getJobInfo = function(result){
               link = jobURL))
 }
 
-getTotalResults = function(string){
-  totalResults = gsub("Page [0-9]+ of ([0-9,]+) jobs", "\\1", string)
-  totalResults = as.integer(gsub(",", "", totalResults))
-  return (totalResults)
-}
-
 # function to get data for different searches
 getJobPostings = function(search){
   url = "https://www.indeed.com"
   p = "jobs"
   location = "california"
+  # TODO: tryCatch on this line
   doc = htmlParse(GET(url, path = p, query = list( q = search, l = location), config(cookie = siteCookie)))
-  totalResults = getTotalResults(xmlValue(getNodeSet(doc, "//div[@id='searchCountPages']"), trim = TRUE))
-  
+
   # get all search results
   allJobListings = list()
-  while (length(allJobListings) < totalResults){
+  nextPageLink = NA # setting up as non-NULL value
+  while (!is.null(nextPageLink)){
     # get all results in current page
     results = getNodeSet(doc, "//div[@class='jobsearch-SerpJobCard unifiedRow row result']")
     jobListings = lapply(results, getJobInfo)
@@ -61,9 +63,10 @@ getJobPostings = function(search){
     checkRows = sapply(jobListings, function(x) x$title)
     allJobListings = c(allJobListings, jobListings[!is.na(checkRows)])
     
-    Sys.sleep(1)
+    Sys.sleep(runif(1, min = 6, max = 10))
     nextPageLink = paste0("https://indeed.com",
                           xpathSApply(doc, "//ul[@class='pagination-list']/li/a[@aria-label='Next']", xmlGetAttr, "href"))
+    # TODO: tryCatch on this Line
     doc = htmlParse(GET(nextPageLink, config(cookie = siteCookie)))
   }
   

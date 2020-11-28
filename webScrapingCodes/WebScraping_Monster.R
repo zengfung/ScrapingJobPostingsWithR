@@ -7,19 +7,18 @@ getJobInfo = function(result){
   jobTitle = xmlValue(getNodeSet(result, ".//div[@class='flex-row']//div[@class='summary']//header[@class='card-header']//h2"), trim = TRUE)
   jobLocation = xmlValue(getNodeSet(result, ".//div[@class='flex-row']//div[@class='summary']//div[@class='location']//span[@class='name']"), trim = TRUE)
   jobCompany = xmlValue(getNodeSet(result, ".//div[@class='flex-row']//div[@class='summary']//div[@class='company']//span[@class='name']"), trim = TRUE)
-  
+
   # prevent reCAPTCHA with Sys.sleep
   Sys.sleep(1)
   jobURL = xpathSApply(result, ".//div[@class='flex-row']//div[@class='summary']//header[@class='card-header']//h2//a", xmlGetAttr, "href")
   jobLink = suppressMessages(htmlParse(GET(jobURL)))
-  # TODO: extracting job description does not work
-  jobDescription = xpathSApply(jobLink, "//div[@class='card-content']", xmlValue)
+  jobDescription = xpathSApply(jobLink, "//div[@name='value_description']//text()", xmlValue, trim = TRUE)
   
   return(list(title = jobTitle,
               source = "monster.com",
               company = jobCompany,
               location = jobLocation,
-              description = jobDescription,
+              description = paste(jobDescription, collapse = "@@"),
               link = jobURL))
 }
 
@@ -28,7 +27,7 @@ getJobPostings = function(search){
   url = "https://www.monster.com"
   p = "/jobs/search/"
   doc = htmlParse(GET(url, path = p, query = list(q = search, where = "california", stpage = "1", page = "10")))
-  
+
   # get all search results
   results = getNodeSet(doc, "//section[@class='card-content ']")
   jobListings = lapply(results, getJobInfo)
@@ -45,7 +44,7 @@ jobListings = sapply(searches, getJobPostings)
 print(sapply(jobListings, length)) # DS: 252, DA: 258, S: 22
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
 monster = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
-names(monster) = names(fullJobListing[[1]])[-5]
+names(monster) = names(fullJobListing[[1]])
 
 # save data frame as RData
 save(monster, file = "monster.RData")
