@@ -32,7 +32,7 @@ getJobInfo = function(result){
 getJobPostings = function(search){
   url = "https://www.careerbuilder.com"
   p = "jobs"
-  doc = htmlParse(GET(url, path = p, query = list(keywords = search, location = "california")))
+  doc = htmlParse(GET(url, path = p, query = list(keywords = search, location = "united states")))
 
   # get all search results
   allJobListings = list()

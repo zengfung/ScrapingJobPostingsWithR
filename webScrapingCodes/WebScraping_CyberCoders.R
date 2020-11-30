@@ -53,7 +53,7 @@ getJobInfo = function(result){
 # function to get data for different searches
 getJobPostings = function(search){
   url = "https://www.cybercoders.com/search/"
-  doc = htmlParse(getForm(url, searchterms = search, searchlocation = "california"))
+  doc = htmlParse(getForm(url, searchterms = search))
 
   # get all search results
   results = getNodeSet(doc, "//div[@class='job-listing-item']")
