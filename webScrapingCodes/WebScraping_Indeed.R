@@ -33,8 +33,6 @@ getJobPostings = function(search){
   nextPageLink = NA # setting up as non-NULL value
   page = 1
   while (!is.null(nextPageLink)){
-    cat("Searching: ", search, "; Scraping page ", page, "\n")
-    print(nextPageLink)
     page = page + 1
     
     # get all results in current page

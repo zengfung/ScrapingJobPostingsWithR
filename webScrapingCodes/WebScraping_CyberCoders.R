@@ -1,5 +1,5 @@
 library(XML)
-library(xml2)
+library(httr)
 library(RCurl)
 
 # function to get data
@@ -56,19 +56,31 @@ getJobPostings = function(search){
   doc = htmlParse(getForm(url, searchterms = search))
 
   # get all search results
-  results = getNodeSet(doc, "//div[@class='job-listing-item']")
-  jobListings = lapply(results, getJobInfo)
-  # remove "rows" that contains NA (extracted ads from website)
-  checkRows = sapply(jobListings, function(x) x$title)
+  allJobListings = list()
+  nextPageLink = NA # setting up as non-NULL value
+  page = 1
+  while (!is.null(nextPageLink)){
+    page = page + 1
+    
+    # get all results in current page
+    results = getNodeSet(doc, "//div[@class='job-listing-item']")
+    jobListings = lapply(results, getJobInfo)
+    # remove "rows" that contains NA (extracted ads from website)
+    checkRows = sapply(jobListings, function(x) x$title)
+    allJobListings = c(allJobListings, jobListings[!is.na(checkRows)])
+    
+    nextPageLink = xpathSApply(doc, "//ul[@class='pager']/li[@class='lnk-next pager-item ']/a[@rel='next']", xmlGetAttr, "href")
+    doc = htmlParse(GET(paste0(url, nextPageLink)))
+  }
   
-  return(jobListings[!is.na(checkRows)])
+  return(allJobListings)
 }
 
 searches = c("data scientist", "data analyst", "statistician")
 
 # obtain all search results
 jobListings = sapply(searches, getJobPostings)
-print(sapply(jobListings, length)) # DS: 4, DA: 3, S: 0
+print(sapply(jobListings, length)) # DS: 16, DA: 26, S: 0
 fullJobListing = c(jobListings[[1]], jobListings[[2]], jobListings[[3]])
 cyberCoders = data.frame(matrix(unlist(fullJobListing), nrow=length(fullJobListing), byrow=T))
 names(cyberCoders) = names(fullJobListing[[1]])
